@@ -1,7 +1,7 @@
 # ADICIONAR: ao registrar uma compra checar se o produto está cadastrado e emitir uma msg
 
-#
-# uvicorn app:app --port 8091 --reload
+
+# run: uvicorn app:app --port 8091 --reload
 
 from typing import List, Optional
 
@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from datetime import date
 
-from functions.functions import minimize, check_duplicate_product
+from functions.functions import minimize, check_duplicate_product, delete_product, check_empty_registry
 
 app = FastAPI()
 
@@ -71,11 +71,11 @@ def create_purchase(product_purchase: ProductPurchase):
     return "SYSTEM: Purchase registered!"
 
 @app.get("/get-products-list")
-    '''Get the entire product registry.'''
 def get_products():
+    '''Get the entire product registry.'''
     try:
         check_empty_registry(products)
-    except EmptyRegister:
+    except EmptyRegistry:
         raise HTTPException(status_code=400, detail="SYSTEM ERROR: Products list is empty.")
     else:
         return {"products" : products}
@@ -88,7 +88,7 @@ def retrieve_specific_product_purchase_history(product_full_name:str):
 
     try:
         check_empty_registry(product_purchase_history)
-    except EmptyRegister:
+    except EmptyRegistry:
         raise HTTPException(status_code=400, detail="SYSTEM ERROR: Product not found.")
     else:
         return {"product_purchase_history": product_purchase_history}
@@ -99,7 +99,7 @@ def delete_registered_product(product_full_name:str):
 
     try:
         check_empty_registry(products)
-    except EmptyRegister:
+    except EmptyRegistry:
         raise HTTPException(status_code=400, detail="SYSTEM ERROR: Product not found.")
     else:
         try:
