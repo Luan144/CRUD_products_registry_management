@@ -1,6 +1,3 @@
-# ADICIONAR: ao registrar uma compra checar se o produto está cadastrado e emitir uma msg
-
-
 # run: uvicorn app:app --port 8091 --reload
 
 from typing import List, Optional
