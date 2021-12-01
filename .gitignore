@@ -1,0 +1,14 @@
+# Untracked files:
+# include
+/Include
+/Lib
+/Scripts
+
+pyvenv.cfg
+
+.idea
+
+Thumbs.db
+
+
+

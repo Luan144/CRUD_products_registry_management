@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from datetime import date
 
-from functions.functions import minimize
+from functions.functions import minimize, check_duplicate_product
 
 app = FastAPI()
 
@@ -21,50 +21,27 @@ class ProductBody(BaseModel):
     quantity: float
     full_name: Optional[str] = ""
 
-# Product history structure
+# Purchase information structure
 class ProductPurchase(BaseModel):
     full_name: str
     price: float
     bought: int
     date: date
 
-
-products: List[ProductBody] = []
-history: List[ProductPurchase] = []
-
+# Custom exceptions
 class DuplicateProduct(Exception):
     '''Raised when trying to register an already registered product in products list.'''
 
-class EmptyRegister(Exception):
+class EmptyRegistry(Exception):
     '''Raised when trying to get an empty registry.'''
 
 class ProductNotFound(Exception):
     '''Raised when trying to get a non-existing product.'''
 
-def check_duplicate_product(product_full_name:str):
-    '''Check if product.full_name (primary key) is already in products list.'''
 
-    product = list(filter(lambda x: x.full_name == product_full_name, products))
+products: List[ProductBody] = []
+history: List[ProductPurchase] = []
 
-    if len(product) != 0:
-        raise DuplicateProduct
-
-def check_empty_registry(registry_name: list):
-    '''Check if product.full_name (primary key) is already in products list.'''
-
-    if len(registry_name) == 0:
-        raise EmptyRegister
-
-def delete_product(product_full_name: str, product_registry: list):
-    for idx, prod in enumerate(product_registry):
-        if prod.full_name == product_full_name:
-            del product_registry[idx]
-            break
-        else:
-            raise ProductNotFound
-
-
-# Create a new product using ProductBody structure
 @app.post("/register-product", status_code=201)
 def create_product(product: ProductBody):
     '''Register a product in the products list using the ProductBody structure'''
@@ -93,8 +70,8 @@ def create_purchase(product_purchase: ProductPurchase):
 
     return "SYSTEM: Purchase registered!"
 
-# Recieve a dict with all the existing products
 @app.get("/get-products-list")
+    '''Get the entire product registry.'''
 def get_products():
     try:
         check_empty_registry(products)
@@ -103,7 +80,6 @@ def get_products():
     else:
         return {"products" : products}
 
-# Retrieve specific product history using the primary key full_name
 @app.get("/{product_full_name}")
 def retrieve_specific_product_purchase_history(product_full_name:str):
     '''Retrieve an specific product's purchase history using its full name (primary key).'''
@@ -119,7 +95,7 @@ def retrieve_specific_product_purchase_history(product_full_name:str):
 
 @app.delete("/{product_full_name}", status_code=201)
 def delete_registered_product(product_full_name:str):
-    '''Use a product full name (primary key to remove a product from products list'''
+    '''Use the product.full_name (primary key) to remove a product from the product registry.'''
 
     try:
         check_empty_registry(products)
